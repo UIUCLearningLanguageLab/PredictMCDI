@@ -23,9 +23,9 @@ mcdi_data <- mcdi_data %>% filter(!type %in% exclude_types)
 #2)Include only a single item for words with multiple meaning (e.g can(object, can (auxiliary))) 
 remove_items <- c("baa baa", "choo choo", "quack quack", "uh oh", "woof woof", "yum yum",
                   "play dough", "chicken (food)", "fish (food)", "french fries", "green beans", 
-                  "ice cream", "peanut butter", "potato chip", "belly button", "TV", "high chair",
+                  "ice cream", "peanut butter", "potato chip", "belly button", "high chair",
                   "living room", "rocking chair", "washing machine", "play pen", "lawn mower",
-                  "gas station", "babysitter's name", "child's own name", "pet's name", "I", 
+                  "gas station", "babysitter's name", "child's own name", "pet's name",
                   "give me five!","gonna get you!","go potty","night night",
                   "so big!","thank you","this little piggy","turn around","drink (action)",
                   "slide (action)", "swing (action)","watch (action)","work (action)","all gone",
@@ -51,7 +51,7 @@ mcdi_data$definition <- recode(mcdi_data$definition, "chicken (animal)" = "chick
                                "inside/in"= "inside", "did/did ya" = "did", "gonna/going to" = "gonna",
                                "gotta/got to" = "gotta", "hafta/have to" = "hafta", "lemme/let me" = "lemme",
                                "need/need to" = "need", "try/try to" = "try", "wanna/want to" = "wanna",
-                               "shh/shush/hush" = "hush", "soda/pop" = "soda",  )
+                               "shh/shush/hush" = "hush", "soda/pop" = "soda")
                     
 #Dichotomize "value". (produces = 1, else = 0)
 mcdi_data$value <- as.character(mcdi_data$value)
@@ -60,14 +60,20 @@ mcdi_data$value[mcdi_data$value == ""] <- 0
 
 #Calculate mcdip.
 mcdi_data$value <- as.numeric(mcdi_data$value)
+
 MCDIp <- mcdi_data %>% group_by(age,definition) %>% summarize(MCDIp = mean(value,na.rm=TRUE))
 
+mcdi_data <- mcdi_data %>% select(definition,lexical_class)
+
 #Merge with clean_mcdi data.
-mcdi_data <- left_join(mcdi_data, MCDIp)
+mcdi_data <- full_join(MCDIp,mcdi_data)
+mcdi_data <- distinct(mcdi_datas)
+
+#Lowercase "definition"
+mcdi_data$definition <- lapply(mcdi_data$definition, tolower)
 
 #Include only relevant columns and save cleaned mcdi.
 
-mcdi_data <- mcdi_data %>% select(data_id, age, definition, value,MCDIp,lexical_class)
 write.csv(mcdi_data, file = "clean_mcdi.csv", row.names = F)
 
 #Save a list of the unique words in our data.
