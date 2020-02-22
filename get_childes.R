@@ -10,7 +10,7 @@ library(childesr)
 childes_utterance <- get_utterances(collection = "Eng-NA")
 
 #Include only relevant age range (0-30 months)
-childes_utterance <- childes_utterance %>% filter (target_child_age >= 0 & target_child_age <= 30)
+childes_utterance <- childes_utterance %>% filter (target_child_age >= 0 & target_child_age <= 31)
 
 #Include only relevant columns and save output.
 childes_utterance <- childes_utterance %>% select(id,transcript_id,gloss,stem, speaker_code, target_child_age, type)
