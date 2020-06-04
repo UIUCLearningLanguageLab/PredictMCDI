@@ -1,0 +1,66 @@
+---
+title: "5a.- Data Analysis"
+author: "Andrew.Z.Flores"
+date: "4/26/2020"
+output: html_document
+---
+
+
+```{r}
+
+ProKWo_data$AGE <- as.factor(ProKWo_data$AGE)
+lattice_plot_MCDIP_ProKWo<- xyplot(MCDIp ~ PKC | AGE, data=ProKWo_data, 
+     col.line=c('black','blue'), 
+     type=c('p','r'), 
+     main='Varability in MCDIp ~ ProKWo relationship',
+       xlab="ProKWo",
+       ylab="mcdip",
+    
+     )
+
+```
+
+# Regression Analysis
+
+```{r}
+ggplot(ProKWo_data, aes(x=PKC, y=MCDIp, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="lm", se=FALSE )  
+```
+These individual regresion lines suggest that there are differences both for slopes and intercepts for our measure of ProKWo and MCDIp.
+
+```{r}
+ggplot(ProKWo_data, aes(x=PKC_Shuffled, y=MCDIps, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="lm", se=FALSE )  
+```
+
+```{r}
+ggplot(ProKWo_data, aes(x=PKC_Shuffled_AGE, y=MCDIp, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="lm", se=FALSE )  
+```
+
+```{r}
+ggplot(ProKWo_data, aes(x=PKC_Shuffled_CLASS, y=MCDIp, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="lm", se=FALSE )  
+```
+
+```{r}
+ggplot(ProKWo_data, aes(x=logFREQ, y=MCDIp, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="lm", se=FALSE )  
+```
+
+```{r}
+ggplot(ProKWo_data, aes(x=DD, y=MCDIp, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="lm", se=FALSE )  
+```
+
+
+```{r}
+ggplot(ProKWo_data, aes(x=LDs, y=MCDIps, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="lm", se=FALSE )  
+```
+
+
+#SMOOTHED GRAPHS
+
+```{r}
+ggplot(ProKWo_data, aes(x=PKCs, y=MCDIps, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="loess", se=FALSE )
+```
+
+
+```{r}
+ggplot(ProKWo_data, aes(x=logFREQ, y=MCDIps, col=AGE,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="loess", se=FALSE )
+```
+```

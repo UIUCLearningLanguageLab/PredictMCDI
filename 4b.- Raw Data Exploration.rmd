@@ -1,0 +1,56 @@
+---
+title: "4b.- Raw Data Exploration.rmd"
+author: "Andrew.Z.Flores"
+date: "4/29/2020"
+output: html_document
+---
+#Setup
+```{r}
+library(lme4)     # Fitting HLM models
+library(lmerTest) # Sattherwait df and t-tests
+library(lattice)  # Lattice/pannel plots
+library(ggplot2)  # Some nice grahics
+library(stringi)  # install before HLMdiag or HLMdiag won't load properly
+library(HLMdiag)  # Some diagnostic graphics for hlm
+library(texreg)   # Nice tabular output
+library(optimx)   # If need to change optimizer
+library(tidyverse)
+
+```
+
+# Load Dataset
+```{r, load_data}
+raw_mcdi <- read_csv("transformed_raw_mcdi.cumul.csv")
+```
+
+# Refactor dependent variable (Produce)
+
+```{r, refactor "Produce"}
+raw_mcdi$Produce <- as.factor(raw_mcdi$Produce)
+raw_mcdi$Age <- as.factor(raw_mcdi$Age)
+
+# Check number of observations
+summary(raw_mcdi$Age)
+plot(raw_mcdi$Age)
+
+Age.subset <- c("18","30")
+
+raw_mcdi.subset <- raw_mcdi %>% filter(Age %in% Age.subset)
+```
+
+```{r, lattice_plots of linear regressions(not proper)}
+xyplot(Produce ~ logCummulative_Frequency | Age,family = "binomial", data=raw_mcdi.subset, 
+     col.line=c('black','blue'), 
+     type=c('p','r'), 
+     main='Varability in Produce ~ Frequency relationship',
+       xlab="Frequency",
+       ylab="Produces",
+       layout=c(5,5)
+     )
+
+```
+
+```{r, regression of all schools}
+ggplot(raw_mcdi.subset, aes(x=ProKWo_centered, y=Produce, col=Lexical_Class,type='l'),  main='Regressions all in one plot')  + geom_smooth(method="glm", se=FALSE,method.args = list(family = "binomial"))   
+```
+

@@ -1,0 +1,716 @@
+---
+title: "5a.- Unique Data Analysis"
+author: "Andrew.Z.Flores"
+date: "4/26/2020"
+output: html_document
+---
+
+```{r, libraries}
+library(tidyverse)
+library(lme4)
+library(lmerTest)
+library(gee)
+library(gtools)
+library(MASS)
+library(performance)
+library(miscTools)
+library(insight)
+library(lmf)
+library(plyr)
+library(reshape2)
+```
+
+# Load Unique Dataset
+```{r, load data}
+unique_mcdi <- read_csv("transformed_unique_mcdi.cumul.csv")
+unique_mcdi.subset <- read_csv("transformed_unique_mcdi_cumul.subset.csv")
+```
+
+
+Transform dependent variable into inverse.logit to reduce bounded values [0,1] in MCDIp. Interpretation of estimates can now be thought of in odds ratio.
+
+```{r , mini_processing}
+# Full Dataset
+HLM_data.beta <- unique_mcdi %>% mutate(MCDIp.logit = logit(MCDIp, min = 0, max = 1))
+
+#For use of regression models. Remove -infinite (i.e 0 MCDIp) and +infinite (i.e 1 MCDIp) from the dataset.
+HLM_data.beta <- HLM_data.beta %>% filter(MCDIp != 0)
+HLM_data.beta <- HLM_data.beta %>% filter(MCDIp != 1)
+
+
+
+```
+
+# Within each age group (Simple Models)
+
+## Quasi-Logistic Regressions
+
+### Model_A (MCDIp.logit~logCummulative_Frequency)
+
+```{r, model_A create_list}
+
+model_A.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- glm(MCDIp.logit ~ logCummulative_Frequency, data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ model_A.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_A = do.call(rbind, model_A.list)
+
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_A")
+
+#Add correct age groups to model summaries
+
+model_A["Age"] <- model_ages 
+model_A["Model"] <- model_name
+
+summary(model0)
+#add "Age"
+```
+
+### Model_B (MCDIp.logit~ProKWo)
+
+```{r, model_B create_list}
+model_B.summary <- list() 
+model_B.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- glm(MCDIp.logit ~ ProKWo_centered, data=sub) 
+        # sum of all SS
+ summary <- summary(model0)
+ model<- model_performance(model0)   
+ 
+ model_B.list[[i]] <- model
+ model_B.summary[[i]] <- summary
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_B = do.call(rbind, model_B.list)
+
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_B")
+
+#Add correct age groups to model summaries
+
+model_B["Age"] <- model_ages 
+model_B["Model"] <- model_name
+
+```
+
+### Model_C (MCDIp.logit~Lexical_Diversity)
+
+```{r, model_C create_list}
+
+model_C.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- glm(MCDIp.logit ~ Lexical_Diversity.centered, data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ model_C.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_C = do.call(rbind, model_C.list)
+
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_C")
+
+#Add correct age groups to model summaries
+
+model_C["Age"] <- model_ages 
+model_C["Model"] <- model_name
+
+```
+
+### Model_D (MCDIp.logit~Document_Diversity)
+
+```{r, model_D create_list}
+
+model_D.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- glm(MCDIp.logit ~ Document_Diversity.centered, data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ model_D.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_D = do.call(rbind, model_D.list)
+
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_D")
+
+#Add correct age groups to model summaries
+
+model_D["Age"] <- model_ages 
+model_D["Model"] <- model_name
+```
+
+### Model_E (MCDIp.logit~ProKWo_Shuffle)
+
+```{r, model_E create_list}
+
+model_E.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- glm(MCDIp.logit ~ ProKWo_Shuffle, data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ model_E.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_E = do.call(rbind, model_E.list)
+
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_E")
+
+#Add correct age groups to model summaries
+
+model_E["Age"] <- model_ages 
+model_E["Model"] <- model_name
+```
+
+## Summary of Simple Models
+
+```{r, combine_simple.models}
+simple_models <- model_A %>% full_join(model_B) %>% full_join(model_C) %>% full_join(model_D) %>% full_join(model_E)
+
+# 1) reshape in order to plot desired  2)R^2 Nagelkerke values
+# 1)
+simple_models<- melt(simple_models, id.vars = c("Model","Age"))
+
+# 2)
+simple_models.R2 <- simple_models %>% filter(variable == "R2_Nagelkerke")
+simple_models.AIC <- simple_models %>% filter(variable == "AIC")
+simple_models.RMSE <- simple_models %>% filter(variable == "RMSE")
+
+```
+
+### R^2 Nagelkerke
+```{r plot_simple_models.R2}
+#plot R2's
+Simple_models.R2 <- ggplot(simple_models.R2, aes(x=Age, y=value,color = Model))+ theme_classic() + labs( x = "Age (mo)" , y = "R2 (Nagelkerke)", title = "MCDIp.logit ~ *Predictor* ") + scale_color_manual(labels =c("Frequency","Pro-KWo","Lexical Diversity","Document Diversity","ProKWo Shuffled"), values = c("#ffa500","#00ff00","#00bfff","#0000ff","#ff1493")) +geom_line()+ theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+Simple_models.R2  
+
+ggsave(plot = Simple_models.R2, "Simple_models.R2.png", width = 10 , height = 7 , units = "in")
+
+```
+
+### AIC
+```{r plot_simple_models.R2}
+#plot R2's
+simple_models.AIC <- ggplot(simple_models.AIC, aes(x=Age, y=value,color = Model))+ theme_classic() + labs( x = "Age (mo)" , y = "AIC", title = "MCDIp.logit ~ *Predictor* ") + scale_color_manual(labels =c("Frequency","Pro-KWo","Lexical Diversity","Document Diversity","ProKWo Shuffled"), values = c("#003366","#713c83","#c73e79","#fc6250","#ffa600")) +geom_line()+ theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+simple_models.AIC  
+
+ggsave(plot = simple_models.AIC, "simple_models.AIC.png", width = 10 , height = 7 , units = "in")
+
+```
+### Residual Mean Square Errors (RMSE)
+
+```{r plot_simple_models.R2}
+#plot R2's
+simple_models.RMSE <- ggplot(simple_models.RMSE, aes(x=Age, y=value,color = Model))+ theme_classic() + labs( x = "Age (mo)" , y = "RMSE", title = "MCDIp.logit ~ *Predictor* ") + scale_color_manual(labels =c("Frequency","Pro-KWo","Lexical Diversity","Document Diversity","ProKWo Shuffled"), values = c("#003366","#713c83","#c73e79","#fc6250","#ffa600")) +geom_line()+ theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+simple_models.RMSE  
+
+ggsave(plot = simple_models.RMSE, "simple_models.RMSE.png", width = 10 , height = 7 , units = "in")
+
+```
+
+## HLM Logistic Regressions (Lexical Class)
+### Model_F (MCDIp.logit~logCummulative_Frequency + (1 + log.Cummulative_Frequency|Lexical_Class))
+
+```{r, Model_F create_list}
+
+Model_F.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~ logCummulative_Frequency + (logCummulative_Frequency|Lexical_Class),REML = FALSE, data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ Model_F.list[[i]] <- model
+ index <- index+1                      # up-date index 
+
+}
+```
+
+```{r, bind_model_performance}
+model_F = do.call(rbind,Model_F.list)
+
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_F")
+
+#Add correct age groups to model summaries
+
+model_F["Age"] <- model_ages 
+model_F["Model"] <- model_name
+
+summary(model0)
+#add "Age"
+```
+### Model_G (MCDIp.logit~ProKWo + (1 + ProKWo|Lexical_Class))
+
+```{r, Model_G create_list}
+
+Model_G.list <- list()
+
+
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~ ProKWo_centered + (1 + ProKWo_centered|Lexical_Class) ,data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ Model_G.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+results suggest there is no additional variability that can be explained by the random factor of lexical class in 5 of our age groups.
+
+
+```{r, bind_model_performance}
+model_G = do.call(rbind, Model_G.list)
+
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_G")
+
+#Add correct age groups to model summaries
+
+model_G["Age"] <- model_ages 
+model_G["Model"] <- model_name
+
+```
+
+
+### Model_H (MCDIp.logit~Lexical_Diversity + (1 + Lexical_Diversity|Lexical_Class))
+
+```{r, model_B create_list}
+
+Model_H.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~ Lexical_Diversity.centered + (1 + Lexical_Diversity.centered|Lexical_Class),data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ Model_H.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_H = do.call(rbind, Model_H.list)
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_H")
+
+#Add correct age groups to model summaries
+model_H["Age"] <- model_ages 
+model_H["Model"] <- model_name
+
+```
+
+## Summary of HLM Models (Lexical Class)
+
+```{r, combine_simple.models}
+HLM_Lexical.Class <- model_F %>% full_join(model_G) %>% full_join(model_H) 
+
+# 1) reshape in order to plot desired  2)R^2 Nagelkerke values
+# 1)
+HLM_Lexical.Class<- melt(HLM_Lexical.Class, id.vars = c("Model","Age"))
+
+# 2)
+HLM_Lexical_Class_R2.Conditional <- HLM_Lexical.Class %>% filter(variable == "R2_conditional")
+HLM_Lexical_Class_R2.Marginal <- HLM_Lexical.Class %>% filter(variable == "R2_marginal")
+HLM_Lexical_Class.ICC <- HLM_Lexical.Class %>% filter(variable == "ICC")
+HLM_Lexical_Class.AIC <- HLM_Lexical.Class %>% filter(variable == "AIC")
+HLM_Lexical_Class.RMSE <- HLM_Lexical.Class %>% filter(variable == "RMSE")
+
+```
+
+### R^2 Conditional
+```{r plot_simple_models.R2}
+#plot R2's
+HLM_Lexical_Class_R2.Conditional <- ggplot(HLM_Lexical_Class_R2.Conditional, aes(x=Age, y=value,color = Model))+ theme_classic() + labs( x = "Age (mo)" , y = "R2 Conditional", title = "MCDIp.logit ~ *Predictor* + (1 + *Predictor*|Lexical_Class) ") + scale_color_manual(labels =c("Frequency","Pro-KWo","Lexical Diversity"), values = c("#ffa500","#00bfff","#ff1493")) +geom_line()+ theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+HLM_Lexical_Class_R2.Conditional 
+
+ggsave(plot = HLM_Lexical_Class_R2.Conditional, "HLM_Lexical_Class_R2.Conditional.png", width = 10 , height = 7 , units = "in")
+
+```
+
+### R^2 Marginal
+```{r plot_simple_models.R2}
+#plot R2's
+HLM_Lexical_Class_R2.Marginal <- ggplot(HLM_Lexical_Class_R2.Marginal, aes(x=Age, y=value,color = Model))+ theme_classic() + labs( x = "Age (mo)" , y = "R2 Marginal", title = "MCDIp.logit ~ *Predictor* + (1 + *Predictor*|Lexical_Class) ") + scale_color_manual(labels =c("Frequency","Pro-KWo","Lexical Diversity"), values = c("#ffa500","#00bfff","#ff1493")) +geom_line()+ theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+HLM_Lexical_Class_R2.Marginal 
+
+ggsave(plot = HLM_Lexical_Class_R2.Marginal, "HLM_Lexical_Class_R2.Marginal.png", width = 10 , height = 7 , units = "in")
+
+```
+
+### Intra-Class Correlation (ICC)
+```{r plot_simple_models.R2}
+#plot R2's
+HLM_Lexical_Class.ICC <- ggplot(HLM_Lexical_Class.ICC, aes(x=Age, y=value,color = Model))+ theme_classic() + labs( x = "Age (mo)" , y = "ICC", title = "MCDIp.logit ~ *Predictor* + (1 + *Predictor*|Lexical_Class) ") + scale_color_manual(labels =c("Frequency","Pro-KWo","Lexical Diversity"), values = c("#ffa500","#00bfff","#ff1493")) +geom_line()+ theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+HLM_Lexical_Class.ICC 
+
+ggsave(plot = HLM_Lexical_Class.ICC, "HLM_Lexical_Class.ICC.png", width = 10 , height = 7 , units = "in")
+
+```
+
+
+### AIC 
+```{r plot_simple_models.R2}
+#plot R2's
+HLM_Lexical_Class.AIC <- ggplot(HLM_Lexical_Class.AIC, aes(x=Age, y=value,color = Model))+ theme_classic() + labs( x = "Age (mo)" , y = "AIC", title = "MCDIp.logit ~ *Predictor* + (1 + *Predictor*|Lexical_Class) ") + scale_color_manual(labels =c("Frequency","Pro-KWo","Lexical Diversity"), values = c("#ffa500","#00bfff","#ff1493")) +geom_line()+ theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+HLM_Lexical_Class.AIC 
+
+ggsave(plot = HLM_Lexical_Class.AIC, "HLM_Lexical_Class.AIC.png", width = 10 , height = 7 , units = "in")
+
+```
+
+## Complex HLM Logistic Regressions (Lexical Class)
+
+### Model_I (MCDIp.logit~ logCummulative_Frequency + ProKWo + (1+ log.Cummulative_Frequency|Lexical_Class )) 
+### Model_I TOO COMPLEX , Model_J *REMOVE SLOPES*.
+
+```{r, model_I create_list}
+
+Model_I.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~  logCummulative_Frequency + ProKWo_centered+ (1 + logCummulative_Frequency|Lexical_Class) + (1 + ProKWo_centered|Lexical_Class), control = lmerControl(optimizer ="Nelder_Mead")  ,data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ Model_I.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+#model_I = do.call(rbind, Model_I.list)
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+#model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+#model_name <- c("Model_I")
+
+#Add correct age groups to model summaries
+#Model_I["Age"] <- model_ages 
+#Model_I["Model"] <- model_name
+
+```
+
+### Model_J (MCDIp.logit~ logCummulative_Frequency + ProKWo + (1|Lexical_Class )) 
+
+```{r, model_I create_list}
+
+Model_J.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~  logCummulative_Frequency + ProKWo_centered+(1|Lexical_Class), REML = FALSE ,data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ Model_J.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_J = do.call(rbind, Model_J.list)
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("Model_J")
+
+#Add correct age groups to model summaries
+model_J["Age"] <- model_ages 
+model_J["Model"] <- model_name
+
+```
+
+### Model_K (MCDIp.logit~ logCummulative_Frequency * ProKWo + (1|Lexical_Class )) 
+
+```{r, model_I create_list}
+
+model_K.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~  logCummulative_Frequency * ProKWo_centered+(1|Lexical_Class) , REML = FALSE ,data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ model_K.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_K = do.call(rbind, model_K.list)
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("model_K")
+
+#Add correct age groups to model summaries
+model_K["Age"] <- model_ages 
+model_K["Model"] <- model_name
+
+#Look at estimates at 20 months
+summary(model0)
+```
+### Model_L (MCDIp.logit~ logCummulative_Frequency + ProKWo + Lexical_Class + Document_Diversity  + (1|Lexical_Class )) 
+
+```{r, model_I create_list}
+
+model_L.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~  logCummulative_Frequency + ProKWo_centered+Lexical_Diversity.centered+Document_Diversity.centered+(1|Lexical_Class), REML = FALSE,data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ model_L.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_L = do.call(rbind, model_L.list)
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("model_L")
+
+#Add correct age groups to model summaries
+model_L["Age"] <- model_ages 
+model_L["Model"] <- model_name
+
+#Look at estimates at 20 months
+summary(model0)
+```
+
+### Model_M (MCDIp.logit~ logCummulative_Frequency + ProKWo + Lexical_Class + Document_Diversity  + (1|Lexical_Class )) 
+
+```{r, model_M create_list}
+
+model_M.list <- list()
+
+```
+
+Fit regressions for each age and save the R^2, sums of squares for model and total (corrected for total) for each age.
+```{r}
+index <-1                               # initialize
+for (i in (unique(HLM_data.beta$Age))) {   
+ print(i)
+ sub <- HLM_data.beta[ which(HLM_data.beta$Age==i),] 
+ 
+ model0 <- lmer(MCDIp.logit ~  logCummulative_Frequency + ProKWo_centered+Lexical_Diversity.centered+Document_Diversity.centered+(1|Lexical_Class), REML = FALSE ,data=sub) 
+        # sum of all SS                                   
+ model<- model_performance(model0)   
+ 
+ model_M.list[[i]] <- model
+ index <- index+1                      # up-date index 
+}
+```
+
+```{r, bind_model_performance}
+model_L = do.call(rbind, model_L.list)
+
+#Oddly model sequence does not go from lowest to highest instead it is:
+model_ages <- c(27,21,26,19,30,25,24,28,18,29,16,17,22,23,20)
+model_name <- c("model_M")
+
+#Add correct age groups to model summaries
+model_L["Age"] <- model_ages 
+model_L["Model"] <- model_name
+
+#Look at estimates at 20 months
+summary(model0)
+```
+
+## Summary of Complex HLM Logistic Regressions (Lexical Class)
+
+```{r}
+Complex_HLM_Lexical.Class <- model_B %>% full_join(model_G) %>% full_join(model_A) %>% full_join(model_F) 
+
+# 1) reshape in order to plot desired  2)R^2 Nagelkerke values
+Complex_HLM_Lexical.Class<- melt(Complex_HLM_Lexical.Class, id.vars = c("Model","Age"))
+
+# 2) Plot R2 of both simple and complex models
+Complex_HLM_Lexical_Class_R2 <- Complex_HLM_Lexical.Class %>% filter(variable == "R2_conditional" | variable== "R2_Nagelkerke")
+Complex_HLM_Lexical_Class_R2 <- na.omit(Complex_HLM_Lexical_Class_R2)
+
+Complex_HLM_Lexical_Class_R2.Conditional <- Complex_HLM_Lexical.Class %>% filter(variable == "R2_conditional")
+Complex_HLM_Lexical_Class_R2.Marginal <- Complex_HLM_Lexical.Class %>% filter(variable == "R2_marginal")
+Complex_HLM_Lexical_Class.ICC <- Complex_HLM_Lexical.Class %>% filter(variable == "ICC")
+Complex_HLM_Lexical_Class.AIC <- Complex_HLM_Lexical.Class %>% filter(variable == "AIC")
+Complex_HLM_Lexical_Class.RMSE <- Complex_HLM_Lexical.Class %>% filter(variable == "RMSE")
+```
+
+```{r plot_complex_models.R2}
+#plot R2's
+Complex_HLM_Lexical_Class_R2 <- ggplot(Complex_HLM_Lexical_Class_R2, aes(x=Age, y=value,color = Model))+ theme_classic() + geom_line()+labs( x = "Age (mo)" , y = "R2", title = "Model Comparison")+ scale_color_manual(labels =c("Frequency","Pro-KWo","Frequency|Lexical_Class", "ProKWo|Lexical_Class"), values = c("#003f5c","#5c0000","#4ea3bb","#b8484e"))  +theme(legend.position = "top", legend.title = element_blank(),plot.title = element_text(hjust = 0.5))   
+
+# Display  
+Complex_HLM_Lexical_Class_R2 
+
+ggsave(plot = Complex_HLM_Lexical_Class_R2, "Complex_HLM_Lexical_Class_R2.png", width = 10 , height = 7 , units = "in")
+```
+
+
