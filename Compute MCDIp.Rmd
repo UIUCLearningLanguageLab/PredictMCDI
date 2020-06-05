@@ -1,0 +1,76 @@
+## Calculate proportion of children who produce a word at each age group (clean_mcdip)
+```{r, calculate_clean_mcdip}
+
+clean_mcdi <- read_csv("clean_mcdi.csv")
+
+#Dichotomize "value". (produces = 1, else = 0)
+clean_mcdi <- clean_mcdi %>% mutate(value = if_else(is.na(value), 0, 1))
+
+#Calculate clean_mcdip scores 3 ways:
+clean_mcdi$value <- as.numeric(clean_mcdi$value)
+
+# clean_mcdip by word and age
+clean_mcdip <-
+  clean_mcdi %>% group_by(definition, age) %>% summarize(clean_mcdip = mean(value, na.rm =
+                                                                              TRUE))
+
+# clean_mcdip by lexical_category and age
+clean_mcdip_category <-
+  clean_mcdi %>% group_by(category, age) %>% summarize(clean_mcdip_category = mean(value, na.rm =
+                                                                                     TRUE))
+
+# clean_mcdip by lexical_class and age
+clean_mcdip_lex.class <-
+  clean_mcdi %>% group_by(lexical_class, age) %>% summarize(clean_mcdip_lex.class = mean(value, na.rm =
+                                                                                           TRUE))
+
+
+# Save files
+write.csv(clean_mcdip , file = "clean_mcdip.csv", row.names = FALSE)
+write.csv(clean_mcdip_category , file = "clean_mcdip_category.csv", row.names = FALSE)
+write.csv(clean_mcdip_lex.class , file = "clean_mcdip_lex.class.csv", row.names = FALSE)
+
+
+```
+
+### Merge calculated MCDIp values with raw mcdi dataset & save files.
+```{r, merge_mcdi}
+
+merged_mcdi <-
+  mcdi %>% full_join(MCDIp) %>% full_join(clean_mcdip_category) %>% full_join(clean_mcdip_lex.class)
+
+#Keep only relevant Columns & set desired names
+prepared_mcdi <-
+  merged_mcdi %>% select(
+    data_id,
+    age,
+    value,
+    definition,
+    lexical_class,
+    category,
+    MCDIp,
+    MCDIp_category,
+    MCDIp_lex.class
+  ) %>%  setNames(
+    c(
+      "data_id",
+      "Age",
+      "Produce",
+      "Word",
+      "Lexical_Class",
+      "Category",
+      "MCDIp",
+      "MCDIp_category",
+      "MCDIp_lex.class"
+    )
+  )
+
+#keep only unique values
+prepared_mcdi.unique <-prepared_mcdi %>% select(Age,Word,Lexical_Class,Category,MCDIp,MCDIp_category,MCDIp_lex.class) 
+
+prepared_mcdi.unique <- unique(prepared_mcdi.unique)
+
+# Save files
+write.csv(prepared_mcdi.unique, file = "prepared_mcdi_unique.csv", row.names = FALSE)
+write.csv(prepared_mcdi, file = "prepared_mcdi_raw.csv", row.names = FALSE)
+```
