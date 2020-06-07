@@ -236,45 +236,6 @@ def target_lexical_diversity_by_age(age_list, target_list, cumulative_cooc_matri
 
     return ld_age_matrix
 
-# PH
-# def make_doc_div_mat(childesdb_data, target_index_dict, age_index_dict, doc_index_dict):
-#     # initializing
-#     result = {age : {} for age in age_index_dict.keys()}
-#     num_targets, num_ages = len(target_index_dict), len(age_index_dict)
-#     doc_by_age_matrix = np.zeros((num_targets, num_ages))
-#     cummulative_doc_by_age_matrix = np.zeros((num_targets, num_ages))
-#     #
-#     for age1 in age_index_dict.keys():
-#         age_id = age_index_dict[age1]
-#         # create target2doc_set for a given age
-#         target2doc_set = {target: set() for target in target_index_dict.keys()}
-#         for row in childesdb_data:
-#             doc_id = row[0]
-#             age2 = row[2]
-#             if age2 <= age1:
-#                 utterance = row[3]
-#                 for w in utterance:
-#                     if w in target_index_dict:
-#                         target2doc_set[w].add(doc_id)
-#         result[age1] = target2doc_set
-#         #  retrieve data from target2doc_set
-#         for target, doc_set in target2doc_set.items():
-#             target_id = target_index_dict[target]
-#             doc_count = len(doc_set)
-#             total_docs= len(doc_index_dict)
-#             doc_diversity =  doc_count/ total_docs
-#             doc_by_age_matrix[target_id, age_id] += doc_diversity
-#
-#
-#     for i in range(num_targets):
-#         for j in range(num_ages):
-#             if j == 0:
-#                 cummulative_doc_by_age_matrix[i,j] = doc_by_age_matrix[i,j]
-#             else:
-#                 cummulative_doc_by_age_matrix[i,j] = doc_by_age_matrix[i,j] + cummulative_doc_by_age_matrix[i,j-1]
-#
-#     return doc_by_age_matrix, cummulative_doc_by_age_matrix
-
 def dd_matrix(target_index_dict, age_index_dict, doc_index_dict, doc_list, childesdb_data):
     num_targets = len(target_index_dict)
     num_ages = len(age_index_dict)
