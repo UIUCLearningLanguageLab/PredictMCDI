@@ -1,0 +1,87 @@
+
+```{r, load_libraries}
+library(tidyverse)
+library(lattice)
+library(ggrepel)
+library(GGally)
+library(reshape2)
+```
+
+```{r, load_data}
+unique_subset <- read.csv("transformed_unique_mcdi_cumul.subset.csv")
+
+unique_subset.24 <- unique_subset %>% filter(Age == 24)
+
+```
+
+### Correlation Line Graph 
+```{r, reshape}
+
+#select desired columns
+unique_subset_Cross.Sectional <- unique_subset %>% select(Age,Lexical_Class,MCDIp_logCummulative_Frequency.lex,MCDIp_Lexical_Diversity.lex,MCDIp_Document_Diversity.lex,MCDIp_ProKWo.lex,MCDIp_ProKWo_Shuffle.lex,Lexical_Class,MCDIp_logCummulative_Frequency.all,MCDIp_Lexical_Diversity.all,MCDIp_Document_Diversity.all,MCDIp_ProKWo.all,MCDIp_ProKWo_Shuffle.all)
+
+#reshape in order to plot
+unique_subset_Cross.Sectional<- melt(unique_subset_Cross.Sectional, id=c("Age","Lexical_Class"))
+
+#remove duplicate values
+unique_subset_Cross.Sectional <- unique(unique_subset_Cross.Sectional)
+
+# Add Lexical category "All"
+unique_subset_Cross.Sectional <- unique_subset_Cross.Sectional %>% mutate(Lexical_Class = case_when(grepl("all", variable)~ "All",TRUE ~as.character(Lexical_Class)))
+
+#Make variable names less obtuse...
+unique_subset_Cross.Sectional <- unique_subset_Cross.Sectional %>% mutate(measure = case_when(grepl("MCDIp_ProKWo.all", variable)~ "Pro-KWo",grepl("MCDIp_ProKWo.lex", variable)~ "Pro-KWo",grepl("Frequency",variable) ~ "Frequency", grepl("Lexical", variable)~ "Lexical Diversity", grepl("Document_Diversity", variable) ~ "Document Diversity", grepl("MCDIp_ProKWo_Shuffle.all", variable) ~ "Pro-KWo Shuffle",grepl("MCDIp_ProKWo_Shuffle.lex", variable) ~ "Pro-KWo Shuffle"))
+
+# Subset of data that does not include lexical class
+unique_subset_Cross_Sectional.All <- unique_subset_Cross.Sectional %>% filter(Lexical_Class == "All")
+
+unique_subset_Cross.Sectional$Age <- as.factor(unique_subset_Cross.Sectional$Age)
+unique_subset_Cross.Sectional <- unique(unique_subset_Cross.Sectional)
+
+
+unique_subset_Cross_Sectional.All$Age <- as.factor(unique_subset_Cross_Sectional.All$Age)
+unique_subset_Cross_Sectional.All <- unique(unique_subset_Cross_Sectional.All)
+```
+
+```{r, cross-sectional}
+
+unique_subset_Cross.Sectional$measure = factor(unique_subset_Cross.Sectional$measure, levels=c("Frequency","Lexical Diversity","Document Diversity","Pro-KWo","Pro-KWo Shuffle"))
+
+p <- ggplot(data=unique_subset_Cross.Sectional,
+            mapping = aes(x = Age,
+                          y = value,
+                          color= Lexical_Class))
+
+p<- p + geom_line(aes(group = Lexical_Class)) + facet_wrap(~ measure, nrow = 1)
+
+p <- p + labs( x = "Age (mo)" , y = "Pearson correlation (r)", color = "Lexical Class")     
+
+p <- p + scale_color_manual(labels =c("Adjectives","All","Function","Nouns","Verbs"), values = c("#ffd125","#000000","#6fafc7","#bfd46d","#ee5e5e"))
+
+
+p <- p +  theme_bw() + theme(legend.position= "top",text = element_text(size=20, face = "bold", hjust = 0.5))
+
+ggsave(p, filename = "Figure 3. Correlation Across Ages and Lexical Class.jpeg", width = 14, height = 7)
+```
+
+
+```{r, Without Lexical Class}
+
+unique_subset_Cross_Sectional.All$measure = factor(unique_subset_Cross_Sectional.All$measure, levels=c("Frequency","Lexical Diversity","Document Diversity","Pro-KWo","Pro-KWo Shuffle"))
+
+p <- ggplot(data=unique_subset_Cross_Sectional.All,
+            mapping = aes(x = Age,
+                          y = value,
+                          color= measure))
+
+p<- p + geom_line(aes(group = measure)) + facet_wrap(~ Lexical_Class, nrow = 1)
+
+p <- p + labs( x = "Age (mo)" , y = "Pearson correlation (r)", color = "measure")     
+
+p <- p  + scale_color_manual(values = c("#eeb1a2","#02a699","#f45c51","#274dc6","#000000"))
+
+
+p <- p +  theme_bw() + theme(legend.position= "top",text = element_text(size=20, face = "bold", hjust = 0.5))
+
+ggsave(p, filename = "Figure 3.1 Correlation with ALL MCDI words.jpeg", width = 14, height = 7)
+```
