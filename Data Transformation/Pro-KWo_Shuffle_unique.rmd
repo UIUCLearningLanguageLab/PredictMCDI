@@ -60,7 +60,8 @@ unique_mcdi.cumul <-
 
 ```
 
-#Unique Scaled
+# Unique Scaled
+## Centered 
 ```{r, unique- compute_scaled}
 unique_mcdi.cumul <-
   unique_mcdi.cumul %>% mutate(
@@ -80,7 +81,7 @@ unique_mcdi.cumul <-
     Document_Diversity.centered = scale(Document_Diversity, scale = FALSE, center = TRUE),
     Lexical_Diversity.centered = scale(Lexical_Diversity, scale = FALSE, center = TRUE),
     
-    #Z scoring
+    # Z scoring
     logCummulative_Frequency.z = (scale(
       logCummulative_Frequency,
       scale = TRUE,
@@ -169,143 +170,3 @@ write.csv(unique_subset.24, file = "transformed_unique_subset.24.csv")
 write.csv(unique_subset.27, file = "transformed_unique_subset.27.csv")
 write.csv(unique_subset.30, file = "transformed_unique_subset.30.csv")
 ```
-
-## Raw
-### ProKWo Shuffle
-```{r , raw- compute_ProKWo Shuffled}
-
-
-shuffle_raw.data <- raw_mcdi.cumul %>% select(Age, ProKWo)
-
-Sampling_number <- 1:100
-ProKWo_Shuffled.list <- list()
-
-index <- 1
-
-for (i in Sampling_number) {
-  random_sample <-
-    shuffle_raw.data %>% group_by(Age) %>% mutate(ProKWo_Shuffle = sample(ProKWo, replace =
-                                                                            FALSE))
-  
-  
-  ProKWo_Shuffled.list[[i]] <- random_sample
-  
-  
-  index <- index + 1                      # up-date index
-}
-
-ProKWo_Shuffle = do.call(cbind, ProKWo_Shuffled.list)
-
-ProKWo_Shuffle <-
-  select(ProKWo_Shuffle, starts_with("ProKWo_Shuffle"))
-ProKWo_Shuffle$Age <- NULL
-
-# Add average ProKWo Shuffled score to unique_mcdi.cumul
-raw_mcdi.cumul <-
-  raw_mcdi.cumul %>% mutate(ProKWo_Shuffle = rowMeans(ProKWo_Shuffle))
-
-```
-
-```{r, raw- compute_scaled}
-raw_mcdi.cumul <-
-  raw_mcdi.cumul %>% mutate(
-    logCummulative_Frequency = (log10(1 + Cummulative_Frequency)),
-    logCummulative_Frequency.centered = (scale(
-      logCummulative_Frequency,
-      scale = FALSE,
-      center = TRUE
-    )),
-    #Centering
-    MCDIp_centered = (scale(
-      MCDIp, scale = FALSE, center = TRUE
-    )),
-    MCDIp_logit = logit(MCDIp, min = 0, max = 1),
-    ProKWo_centered = scale(ProKWo, scale = FALSE, center = TRUE),
-    ProKWo_Shuffle.centered = scale(ProKWo_Shuffle, scale = FALSE, center = TRUE),
-    Document_Diversity.centered = scale(Document_Diversity, scale = FALSE, center = TRUE),
-    Lexical_Diversity.centered = scale(Lexical_Diversity, scale = FALSE, center = TRUE),
-    
-    #Z scoring
-    logCummulative_Frequency.z = (scale(
-      logCummulative_Frequency,
-      scale = TRUE,
-      center = FALSE
-    )),
-    MCDIp_z = (scale(
-      MCDIp, scale = TRUE, center = FALSE
-    )),
-    
-    ProKWo_z = scale(ProKWo, scale = TRUE, center = FALSE),
-    ProKWo_Shuffle.z = scale(ProKWo_Shuffle, scale = TRUE, center = FALSE),
-    Document_Diversity.z = scale(Document_Diversity, scale = TRUE, center = FALSE),
-    Lexical_Diversity.z = scale(Lexical_Diversity, scale = TRUE, center = FALSE),
-    #centering then scaling
-    #Scaling formula : sqrt(sum(x^2)/(n-1))
-    logCummulative_Frequency_centered.z = (scale(
-      logCummulative_Frequency,
-      scale = TRUE,
-      center = TRUE
-    )),
-    MCDIp_centered_centered.z = (scale(
-      MCDIp, scale = TRUE, center = TRUE
-    )),
-    MCDIp_logit_centered.z = logit(MCDIp, min = 0, max = 1),
-    ProKWo_centered_centered.z = scale(ProKWo, scale = TRUE, center = TRUE),
-    ProKWo_Shuffle_centered.z = scale(ProKWo_Shuffle, scale = TRUE, center = TRUE),
-    Document_Diversity_centered.z = scale(Document_Diversity, scale = TRUE, center = TRUE),
-    Lexical_Diversity_centered.z = scale(Lexical_Diversity, scale = TRUE, center = TRUE),
-    
-  )
-```
-
-```{r, raw- compute_age.grouped}
-
-raw_mcdi.cumul <- raw_mcdi.cumul %>% group_by(Age) %>% mutate(ProKWo_Shuffle.once=sample(ProKWo,replace=FALSE),
-                                                                 Produce_ProKWo.all = cor(Produce,ProKWo),
-                                                                 Produce_ProKWo_Shuffle_once.all = cor(Produce,ProKWo_Shuffle.once),
-                                                                 Produce_ProKWo_Shuffle.all = cor(Produce,ProKWo_Shuffle),
-                                                                 Produce_logCummulative_Frequency.all = cor(Produce,logCummulative_Frequency), 
-                                                                 Produce_Lexical_Diversity.all = cor(Produce,Lexical_Diversity), 
-                                                                 Produce_Document_Diversity.all = cor(Produce,Document_Diversity))
-```
-
-```{r, raw- compute_age_Lexical_Class_grouped}
-raw_mcdi.cumul <- raw_mcdi.cumul %>% group_by(Age,Lexical_Class)%>% mutate(ProKWo_Shuffle.once=sample(ProKWo,replace=FALSE),
-                                                                 Produce_ProKWo.lex = cor(Produce,ProKWo),
-                                                                 Produce_ProKWo_Shuffle_once.lex = cor(Produce,ProKWo_Shuffle.once),
-                                                                 Produce_ProKWo_Shuffle.lex = cor(Produce,ProKWo_Shuffle),
-                                                                 Produce_logCummulative_Frequency.lex = cor(Produce,logCummulative_Frequency), 
-                                                                 Produce_Lexical_Diversity.lex = cor(Produce,Lexical_Diversity), 
-                                                                 Produce_Document_Diversity.lex = cor(Produce,Document_Diversity))
-
-```
-
-```{r, raw- save transformed files}
-
-#save full unique mcdi dataset
-write.csv(raw_mcdi.cumul, file = "transformed_raw_mcdi.cumul.csv")
-
-#create subset datasets
-subset_ages <- c("18", "21", "24", "27", "30")
-
-#Subset of 5 ages
-raw_mcdi.cumul.subset <-
-  raw_mcdi.cumul %>% filter(Age %in% subset_ages)
-write.csv(raw_mcdi.cumul.subset, file = "transformed_raw_mcdi_cumul.subset.csv")
-
-#Individual Age Subsets
-raw_subset.18 <- raw_mcdi.cumul.subset %>% filter(Age == 18)
-raw_subset.21 <- raw_mcdi.cumul.subset %>% filter(Age == 21)
-raw_subset.24 <- raw_mcdi.cumul.subset %>% filter(Age == 24)
-raw_subset.27 <- raw_mcdi.cumul.subset %>% filter(Age == 27)
-raw_subset.30 <- raw_mcdi.cumul.subset %>% filter(Age == 30)
-
-#save individual datasets
-
-write.csv(raw_subset.18, file = "transformed_raw_subset.18.csv")
-write.csv(raw_subset.21, file = "transformed_raw_subset.21.csv")
-write.csv(raw_subset.24, file = "transformed_raw_subset.24.csv")
-write.csv(raw_subset.27, file = "transformed_raw_subset.27.csv")
-write.csv(raw_subset.30, file = "transformed_raw_subset.30.csv")
-```
-
