@@ -1,0 +1,118 @@
+# CHILDES
+## Distributional Statistics computed using cummulative word frequency. 
+```{r, load_distributional.stats}
+
+# Cummulatice co-occurence data
+Lexical_properties_cumul <- read.csv("predict_mcdi_cumul.csv")
+```
+
+```{r, rename_columns }
+Lexical_properties_cumul <-
+  setNames(
+    Lexical_properties_cumul,
+    c("Age", "Word", "MCDIp", "cumul_freq", "ld", "dd", "ProKWo")
+  )
+
+Lexical_properties_cumul.bidirectional <-
+  setNames(
+    Lexical_properties_cumul.bidirectional,
+    c("Age", "Word", "MCDIp", "cumul_freq", "ld", "dd", "ProKWo")
+  )
+
+```
+
+# Combine CHILDES & MCDI Datasets
+## Unique (MCDIp)
+```{r, combine_unique }
+
+#MCDI
+unique_mcdi <- read.csv("prepared_mcdi_unique.csv")
+#lowercase all words
+unique_mcdi$Word <- tolower(unique_mcdi$Word)
+
+# Cummulative
+unique_data.cumul <-
+  full_join(unique_mcdi, Lexical_properties_cumul , by = c("Age", "Word"))
+
+#  1.- Select relevant data and rename column names.
+#  2.- Remove rows with 0 cummulative frequency
+#  3.- Remove rows that include words of the lexical class "other"
+unique_data.cumul <-
+  unique_data.cumul %>% select(
+    Age,
+    Word,
+    Lexical_Class,
+    Category,
+    MCDIp.x,
+    MCDIp_category,
+    MCDIp_lex.class,
+    cumul_freq,
+    ld,
+    dd,
+    ProKWo
+  ) %>% setNames(
+    c(
+      "Age",
+      "Word",
+      "Lexical_Class",
+      "Category",
+      "MCDIp",
+      "MCDIp_category",
+      "MCDIp_lex.class",
+      "Cummulative_Frequency",
+      "Lexical_Diversity",
+      "Document_Diversity",
+      "ProKWo"
+    )
+  ) %>% filter (Cummulative_Frequency != 0) %>% filter(Lexical_Class != "other")
+
+# Save final data
+write.csv(unique_data.cumul, file = "preprocessed_unique_data.cumul.csv", row.names = F)
+```
+
+## Raw (produce/no produce)
+```{r, combine_raw}
+# raw_mcdi
+raw_mcdi <- read.csv("prepared_mcdi_raw.csv")
+
+#Lowercase all words
+raw_mcdi$Word <- tolower(raw_mcdi$Word)
+
+# Cummulative
+raw_data.cumul <-
+  full_join(raw_mcdi, Lexical_properties_cumul , by = c("Age", "Word"))
+
+raw_data.cumul <-
+  raw_data.cumul %>% select(
+    data_id,
+    Age,
+    Word,
+    Produce,
+    Lexical_Class,
+    Category,
+    MCDIp.x,
+    MCDIp_category,
+    MCDIp_lex.class,
+    cumul_freq,
+    ld,
+    dd,
+    ProKWo
+  ) %>% setNames(
+    c("data_id",
+      "Age",
+      "Word",
+      "Produce",
+      "Lexical_Class",
+      "Category",
+      "MCDIp",
+      "MCDIp_category",
+      "MCDIp_lex.class",
+      "Cummulative_Frequency",
+      "Lexical_Diversity",
+      "Document_Diversity",
+      "ProKWo"
+    )
+  ) %>% filter (Cummulative_Frequency != 0) %>% filter(Lexical_Class != "other")
+
+write.csv(raw_data.cumul, file = "preprocessed_raw_data.cumul.csv", row.names = F)
+```
