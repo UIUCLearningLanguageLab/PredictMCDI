@@ -1,6 +1,6 @@
 
 ```{r, packages}
-#install.packages("childesr")
+install.packages("childesr")
 ```
 
 ```{r, libraries}
