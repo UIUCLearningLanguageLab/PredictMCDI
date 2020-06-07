@@ -1,22 +1,12 @@
----
-title: "Data Acquisition"
-author: "Andrew.Z.Flores"
-date: "4/10/2020"
-output: html_document
----
 
 ```{r, packages}
-#Uncomment to install
-
-#install.packages("wordbankr")
+install.packages("wordbankr")
 ```
 
 ```{r, libraries}
 
 library(wordbankr) # required to download mcdi forms
 ```
-
-# Data Acquisition
 
 ## Mac Arthur Bates Communicative Inventories (MCDI)
 We will begin by downloading all English (American) "Words & Sentences" inventories from wordbank by using the *wordbankr* package and saving the dataset in its raw form.
