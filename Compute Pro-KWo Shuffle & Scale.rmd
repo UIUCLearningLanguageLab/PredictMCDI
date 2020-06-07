@@ -10,9 +10,6 @@ library(gtools)
 ```{r, load_data}
 raw_mcdi.cumul <- read_csv("preprocessed_raw_data.cumul.csv")
 unique_mcdi.cumul <- read_csv("preprocessed_unique_data.cumul.csv")
-
-#raw_mcdi.cumul <- read_csv("preprocessed_raw_data.cumul.bidirectional.csv")
-#unique_mcdi.cumul <- read_csv("preprocessed_unique_data.cumul.bidirectional.csv")
 ```
 ### Refactor columns to appropriate type.
 
