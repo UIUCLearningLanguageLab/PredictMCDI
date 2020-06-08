@@ -64,4 +64,107 @@ for (i in (unique(raw_mcdi$Age))) {
 end_time <- Sys.time()
 print(end_time - start_time)
 }
+
+
+```{r, bind_model_performance}
+# performance ages
+single_ages <- c("18","21","24","27","30")
+# model column
+model_name <- c("model14")
+
+
+# Overall Model summary.
+#remove "spherical fit column"
+model14_performance.list[[18]][[9]] <- NULL
+model14_performance.list[[21]][[9]] <- NULL
+model14_performance.list[[24]][[9]] <- NULL
+model14_performance.list[[27]][[9]] <- NULL
+model14_performance.list[[30]][[9]] <- NULL
+model14_performance <-  do.call(rbind, model14_performance.list)
+model14_performance["Age"] <- single_ages
+model14_performance["Model"] <- model_name
+
+#############################################ESTIMATES#############################################
+# 
+model14_estimate <- as.data.frame(do.call(rbind, model14_estimate.list))
+model14_estimate <- rownames_to_column(model14_estimate)
+model14_estimate <- model14_estimate %>% setNames(c("rowname","value","std.error","z-value","p"))
+
+# Add Age groups
+model14_estimate <- model14_estimate %>% mutate(Age = case_when(grepl("centered$|Intercept.$",rowname)~"18",grepl(".1$",rowname)~"21",grepl(".2$",rowname)~"24",grepl(".3$",rowname)~"27",grepl(".4$",rowname)~"30",grepl("z$",rowname)~"18"))
+
+# Add Estimate names
+model14_estimate <- model14_estimate %>% mutate(Estimate = case_when(grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Frequency*ProKWo",grepl("^logCummulative_Frequency.centered.Lexical_Diversity.centered",rowname)~"Frequency*Document_Diversity",grepl("Frequency.centered$|Frequency.centered.",rowname)~"Frequency",grepl("ProKWo.centered$|ProKWo.centered.",rowname)~"ProKWo",grepl("Lexical_Diversity.centered$|Lexical_Diversity.centered.",rowname)~"Lexical_Diversity",grepl("Document_Diversity.centered$|Document_Diversity.centered.",rowname)~"Document_Diversity",grepl("Intercept",rowname)~"Intercept",grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Intercept",grepl("^ProKWo_Shuffle",rowname)~"ProKWo_Shuffle"))
+
+#Add model name
+model14_estimate["Model"] <- model_name
+
+#keep desired columns
+model14_estimate <- model14_estimate %>% select(Age,Model,Estimate,value, std.error, p)
+#######################################ESTIMATES_ODDS###############################################
+
+# Combine Fixed effect estimates across ages.
+model14_estimate.odds <- as.data.frame(do.call(rbind, model14_estimate_odds.list))
+model14_estimate.odds <- rownames_to_column(model14_estimate.odds)
+model14_estimate.odds <- model14_estimate.odds %>% setNames(c("rowname","value","std.error","z-value","p"))
+
+model14_estimate.odds <- model14_estimate.odds %>% mutate(Age = case_when(grepl("centered$|Intercept.$",rowname)~"18",grepl(".1$",rowname)~"21",grepl(".2$",rowname)~"24",grepl(".3$",rowname)~"27",grepl(".4$",rowname)~"30",grepl("z$",rowname)~"18"))
+
+model14_estimate.odds <- model14_estimate.odds %>% mutate(Estimate = case_when(grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Frequency*ProKWo",grepl("^logCummulative_Frequency.centered.Lexical_Diversity.centered",rowname)~"Frequency*Document_Diversity",grepl("Frequency.centered$|Frequency.centered.",rowname)~"Frequency",grepl("ProKWo.centered$|ProKWo.centered.",rowname)~"ProKWo",grepl("Lexical_Diversity.centered$|Lexical_Diversity.centered.",rowname)~"Lexical_Diversity",grepl("Document_Diversity.centered$|Document_Diversity.centered.",rowname)~"Document_Diversity",grepl("Intercept",rowname)~"Intercept",grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Intercept",grepl("^ProKWo_Shuffle",rowname)~"ProKWo_Shuffle"))
+
+model14_estimate.odds["Model"] <- model_name
+
+model14_estimate.odds <- model14_estimate.odds %>% select(Age,Model,Estimate,value, std.error,p)
+
+##############################CONFIDENCE INTERVALS##################################################
+# Combine Fixed effect confidence intervals.
+model14_confint <- as.data.frame(do.call(rbind, model14_confint.list))
+model14_confint <- na.omit(model14_confint)
+model14_confint <- rownames_to_column(model14_confint)
+
+# Add appropriate age Column
+model14_confint <- model14_confint %>% mutate(Age = case_when(grepl("centered$|Intercept.$",rowname)~"18",grepl(".1$",rowname)~"21",grepl(".2$",rowname)~"24",grepl(".3$",rowname)~"27",grepl(".4$",rowname)~"30",grepl(".5$",rowname)~"33",grepl("z$",rowname)~"18"))
+
+# Add appropriate estimate column
+model14_confint <-model14_confint %>% mutate(Estimate = case_when(grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Frequency*ProKWo",grepl("^logCummulative_Frequency.centered.Lexical_Diversity.centered",rowname)~"Frequency*Document_Diversity",grepl("Frequency.centered$|Frequency.centered.",rowname)~"Frequency",grepl("ProKWo.centered$|ProKWo.centered.",rowname)~"ProKWo",grepl("Lexical_Diversity.centered$|Lexical_Diversity.centered.",rowname)~"Lexical_Diversity",grepl("Document_Diversity.centered$|Document_Diversity.centered.",rowname)~"Document_Diversity",grepl("Intercept",rowname)~"Intercept",grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Intercept",grepl("^ProKWo_Shuffle",rowname)~"ProKWo_Shuffle"))
+
+model14_confint["Model"] <- model_name
+model14_confint <- model14_confint %>% setNames(c("x","2.5%","97.5%","Age","Estimate","Model"))
+model14_confint <- model14_confint %>% select(Age,Model,Estimate,`2.5%`,`97.5%`)
+
+
+##############################CONFIDENCE INTERVALS_ODDS##################################################
+# Combine Fixed effect odds ratio confidence intervals.
+model14_confint.odds <- as.data.frame(do.call(rbind, model14_confint_odds.list))
+model14_confint.odds <- na.omit(model14_confint.odds)
+model14_confint.odds <- rownames_to_column(model14_confint.odds)
+
+# Add appropriate age Column
+model14_confint.odds <- model14_confint.odds %>% mutate(Age = case_when(grepl("centered$|Intercept.$",rowname)~"18",grepl(".1$",rowname)~"21",grepl(".2$",rowname)~"24",grepl(".3$",rowname)~"27",grepl(".4$",rowname)~"30",grepl(".5$",rowname)~"33",grepl("z$",rowname)~"18"))
+
+# Add appropriate estimate column
+model14_confint.odds <- model14_confint.odds %>% mutate(Estimate = case_when(grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Frequency*ProKWo",grepl("^logCummulative_Frequency.centered.Lexical_Diversity.centered",rowname)~"Frequency*Document_Diversity",grepl("Frequency.centered$|Frequency.centered.",rowname)~"Frequency",grepl("ProKWo.centered$|ProKWo.centered.",rowname)~"ProKWo",grepl("Lexical_Diversity.centered$|Lexical_Diversity.centered.",rowname)~"Lexical_Diversity",grepl("Document_Diversity.centered$|Document_Diversity.centered.",rowname)~"Document_Diversity",grepl("Intercept",rowname)~"Intercept",grepl("^logCummulative_Frequency.centered.ProKWo_centered",rowname)~"Intercept",grepl("^ProKWo_Shuffle",rowname)~"ProKWo_Shuffle"))
+
+model14_confint.odds["Model"] <- model_name
+model14_confint.odds <- model14_confint.odds %>% setNames(c("x","2.5%","97.5%","Age","Estimate","Model"))
+model14_confint.odds <- model14_confint.odds %>% select(Age,Model,Estimate,`2.5%`,`97.5%`)
+
+#############################################SAVE#################################################
+# Final Dataframes
+model14_estimate$Age <- as.factor(model14_estimate$Age)
+model14_estimate$Estimate <- as.factor(model14_estimate$Estimate)
+model14_estimate$Model <- as.factor(model14_estimate$Model)
+model14_effects <- full_join(model14_estimate,model14_confint, by= c("Age","Estimate"))
+
+
+model14_estimate.odds$Age <- as.factor(model14_estimate.odds$Age)
+model14_estimate.odds$Estimate <- as.factor(model14_estimate.odds$Estimate)
+model14_estimate.odds$Model <- as.factor(model14_estimate.odds$Model)
+model14_odds.effects <- full_join(model14_estimate.odds,model14_confint.odds)
+
+#Save
+write.csv(model14_performance,"model14_performance.csv",row.names = F)
+write.csv(model14_effects,"model14_effects.csv",row.names = F)
+write.csv(model14_odds.effects,"model14_odds.effects.csv",row.names = F)
+```
 ```
