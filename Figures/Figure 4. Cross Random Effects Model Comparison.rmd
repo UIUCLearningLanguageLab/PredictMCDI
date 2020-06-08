@@ -1,9 +1,4 @@
----
-title: "6b.- Raw Data Analyzed Graphics"
-author: "Andrew.Z.Flores"
-date: "5/4/2020"
-output: html_document
----
+
 #Setup
 ```{r, libraries}
 library(tidyverse)
