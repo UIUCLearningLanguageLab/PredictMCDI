@@ -1,0 +1,64 @@
+---
+title: "4.- Data Exploration"
+author: "Andrew.Z.Flores"
+date: "4/26/2020"
+output: html_document
+---
+
+```{r, load_libraries}
+library(tidyverse)
+library(lattice)
+library(ggrepel)
+library(GGally)
+library(reshape2)
+
+```
+
+```{r, load_data}
+unique_subset <- read.csv("transformed_unique_mcdi_cumul.subset.csv")
+
+# remove outliers that severly impact correlation values
+unique_subset <- unique_subset %>% filter(Word != "penis")
+unique_subset <- unique_subset %>% filter(Word != "i")
+
+unique_subset.16 <- unique_subset %>% filter(Age == 16)
+unique_subset.24 <- unique_subset %>% filter(Age == 24)
+
+```
+
+
+### Correlogram of all variables in the data
+```{r, Correlogram}
+#Our transformation function
+scaleFUN <- function(x) sprintf("%.2f", x)
+
+
+
+#use only variables to be correlated
+Correlation_matrix_data.24 <- subset(unique_subset.24, select = c(logCummulative_Frequency,Lexical_Diversity,Document_Diversity,ProKWo,ProKWo_Shuffle,MCDIp))
+
+# remove outliers that severly impact correlation values
+
+
+
+#plot
+
+corr_plot.24 <- ggpairs(Correlation_matrix_data.24, columnLabels = c("Frequency","Lexical Diversity","Document Diversity","Pro-KWo", "Pro-KWo Shuffle", "MCDIp"),upper = list(continuous = wrap('cor', size = 8))) + theme(plot.title = element_text(hjust = 0.5)) + theme_bw() + theme(strip.background = element_rect(fill = "#00539CFF" ) ,strip.text = element_text(colour = "#FFD662FF" ) ,panel.border = element_rect(color = "steelblue", size = 1), text = element_text(size=22, face = "bold", hjust = 0.5), axis.text.x = element_text(size = 12, face = "plain"),axis.text.y = element_text(size = 13, face = "plain")) 
+
+
+
+
+
+
+
+
+#00539CFF
+
+# display
+#corr_plot.24
+
+#ggplot2::theme_set(ggplot2::theme_bw())
+
+ggsave(plot = corr_plot.24, "Figure 1. Correlogram.24.png", width = 16 , height = 16 , units = "in")
+```
+

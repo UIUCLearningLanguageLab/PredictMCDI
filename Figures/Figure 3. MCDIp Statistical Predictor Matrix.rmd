@@ -1,0 +1,63 @@
+
+```{r, load_libraries}
+library(tidyverse)
+library(lattice)
+library(ggrepel)
+library(GGally)
+library(reshape2)
+
+```
+
+```{r, load_data}
+unique_subset <- read.csv("transformed_unique_mcdi_cumul.subset.csv")
+
+# remove outliers that severly impact correlation values
+unique_subset <- unique_subset %>% filter(Word != "penis")
+
+unique_subset.16 <- unique_subset %>% filter(Age == 16)
+unique_subset.24 <- unique_subset %>% filter(Age == 24)
+
+```
+
+# Multiple Age Group Graph
+### Distribution Matrices
+```{r, Age by Predictor Density Plot Matrix}
+Age_Predictor_Matrix_data <- unique_subset %>% select(Age,MCDIp,logCummulative_Frequency,Lexical_Diversity,Document_Diversity,ProKWo,ProKWo_Shuffle) 
+
+colnames(Age_Predictor_Matrix_data) <-c("Age","MCDIp","Frequency","Lexical Diversity","Document Diversity","Pro-KWo","Pro-KWo Shuffle")
+
+
+
+Age_Predictor_Matrix_data <-  Age_Predictor_Matrix_data %>% gather(key = "Predictor", value =  "Predictor Value",Frequency:`Pro-KWo Shuffle`)
+
+Age_Predictor_Matrix_data$Predictor = factor(Age_Predictor_Matrix_data$Predictor, levels=c("Frequency","Lexical Diversity","Document Diversity","Pro-KWo","Pro-KWo Shuffle"))
+
+#Age_Predictor_Matrix_data <- Age_Predictor_Matrix_data %>% filter(Predictor != "`Pro-KWo Shuffle`")
+
+#create plot
+
+Age_Predictor_Matrix.plot <- Age_Predictor_Matrix_data %>% ggplot(aes(x = `Predictor Value`,y = MCDIp, color = Predictor)) + geom_point()
+
+#set rows
+Age_Predictor_Matrix.plot <- Age_Predictor_Matrix.plot + facet_grid(rows = vars(Age))
+
+#set columns
+Age_Predictor_Matrix.plot <- Age_Predictor_Matrix.plot + facet_grid(cols = vars(Predictor))
+
+
+
+#complete matrix
+Age_Predictor_Matrix.plot <- Age_Predictor_Matrix.plot + facet_grid(vars(Age),vars(Predictor),scales = "free_x")
+
+#add theme
+Age_Predictor_Matrix.plot <- Age_Predictor_Matrix.plot + theme_bw() + theme(legend.position= "none",text = element_text(size=18, face = "bold", hjust = 0.5))
+
+
+Age_Predictor_Matrix.plot <- Age_Predictor_Matrix.plot+ scale_color_manual(values = c("#eeb1a2","#02a699","#f45c51","#274dc6","#000000")
+)
+
+Age_Predictor_Matrix.plot <- Age_Predictor_Matrix.plot +theme(strip.background = element_rect(fill = "#00539CFF" ) ,strip.text = element_text(colour = "#FFD662FF" ) ,panel.border = element_rect(color = "steelblue", size = 1), text = element_text(size=22, face = "bold", hjust = 0.5), axis.text.x = element_text(size = 12, face = "plain"),axis.text.y = element_text(size = 13, face = "plain"))
+
+
+ ggsave(Age_Predictor_Matrix.plot, file = "Figure 3. Age and Predictor Matrix.jpeg",dpi = "retina", width = 15, height = 15)
+```
