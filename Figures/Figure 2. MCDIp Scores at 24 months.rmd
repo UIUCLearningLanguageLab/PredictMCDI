@@ -1,19 +1,26 @@
+
 ```{r, load_libraries}
 library(tidyverse)
 library(lattice)
 library(ggrepel)
 library(GGally)
 library(reshape2)
+
 ```
 
 ```{r, load_data}
 unique_subset <- read.csv("transformed_unique_mcdi_cumul.subset.csv")
 
+# remove outliers that severly impact correlation values
+unique_subset <- unique_subset %>% filter(Word != "penis")
+unique_subset <- unique_subset %>% filter(Word != "i")
+
+unique_subset.16 <- unique_subset %>% filter(Age == 16)
 unique_subset.24 <- unique_subset %>% filter(Age == 24)
 
 ```
 
-```{r, refactor}
+```{r}
 unique_subset.24 <- unique_subset.24 %>% select(Word,Lexical_Class,MCDIp,Lexical_Diversity,Document_Diversity,ProKWo,logCummulative_Frequency)
 
 colnames(unique_subset.24) <-c("Word","Lexical Class","MCDIp","Lexical Diversity","Document Diversity","Pro-KWo","Frequency")
@@ -21,15 +28,14 @@ colnames(unique_subset.24) <-c("Word","Lexical Class","MCDIp","Lexical Diversity
 unique_subset.24 <- unique_subset.24 %>% select(Word,`Lexical Class`,MCDIp,Frequency,`Lexical Diversity`,`Document Diversity`,`Pro-KWo`)
 
 unique_subset.24$MCDIp <- as.factor(unique_subset.24$MCDIp)
-```
 
-```{r, gather}
 unique_subset.24.melt <- melt(unique_subset.24, by = c("Word","Lexical Class","MCDIp"))
 
 unique_subset.24.melt$MCDIp <- as.numeric(as.character(unique_subset.24.melt$MCDIp))
+
 ```
 
-### Label Plot
+### Label Plot.squre
 ```{r, square}
 #plot 
 Label_Plot.24 <-unique_subset.24.melt %>%  
@@ -46,4 +52,3 @@ Label_Plot.24<- Label_Plot.24  + theme(text = element_text(size=20, face = "bold
 
 ggsave(Label_Plot.24, file = "Figure 2. MCDIp Scores at 24 months.jpeg",dpi = "retina", width = 13, height = 13)
 ```
-
