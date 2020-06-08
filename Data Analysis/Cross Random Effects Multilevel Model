@@ -1,1 +1,67 @@
+# Setup
 
+```{r, packages}
+library(lme4)
+library(lmerTest)
+library(gee)    # for generalized estimating equations
+#library(MASS)   # For confidence limits for parameters
+library(tidyverse)
+library(performance)
+library(reshape2)
+
+```
+
+# Load Dataset
+```{r, load_data}
+raw_mcdi <- read_csv("transformed_raw_mcdi.cumul.csv")
+ages <- c("18", "21", "24", "27", "30")
+
+raw_mcdi <- raw_mcdi %>% filter(Age %in% ages)
+```
+
+## Multilevel Cross Random Effects Model. (Produce ~ Frequency.centered + ProKWo+ Lexical_Diversity + Document_Diversity + (1|data_id) + (1|Word)
+```{r, create model14 lists}
+
+model14_estimate.list <- list()
+model14_estimate_odds.list <- list()
+model14_confint.list <-  list()
+model14_confint_odds.list <- list()
+model14_performance.list <- list()
+```
+
+
+```{r, run model}
+start_time <- Sys.time()
+index <- 1                               # initialize
+for (i in (unique(raw_mcdi$Age))) {
+  print(i)
+  sub <- raw_mcdi[which(raw_mcdi$Age == i), ]
+  
+  #run model
+  model0 <-
+    glmer(Produce ~ logCummulative_Frequency_centered.z + ProKWo_centered_centered.z+ Lexical_Diversity_centered.z + Document_Diversity_centered.z+ProKWo_Shuffle_centered.z + (1|data_id) + (1|Word),
+          data = sub,
+          family = "binomial",control = glmerControl(optimizer ="Nelder_Mead"))
+  
+  #retrieve model results
+  estimate <- summary(model0)$coefficients
+  estimate_odds <- exp(summary(model0)$coefficients)
+  estimate_confint <- confint(model0, method = "Wald")
+  estimate_odds.confint <- exp(estimate_confint)
+  model_performance <- model_performance(model0)
+  
+  #add model results for each iteration
+  model14_estimate.list[[i]] <- estimate
+  model14_estimate_odds.list[[i]] <- estimate_odds
+  model14_confint.list[[i]] <- estimate_confint
+  model14_confint_odds.list[[i]] <- estimate_odds.confint
+  model14_performance.list[[i]] <- model_performance
+  
+  
+  
+  index <- index + 1                      # up-date index
+  
+end_time <- Sys.time()
+print(end_time - start_time)
+}
+```
