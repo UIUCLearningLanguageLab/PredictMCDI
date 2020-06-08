@@ -10,6 +10,11 @@ library(reshape2)
 ```{r, load_data}
 unique_subset <- read.csv("transformed_unique_mcdi_cumul.subset.csv")
 
+# remove outliers that severly impact correlation values
+unique_subset <- unique_subset %>% filter(Word != "penis")
+unique_subset <- unique_subset %>% filter(Word != "i")
+
+unique_subset.16 <- unique_subset %>% filter(Age == 16)
 unique_subset.24 <- unique_subset %>% filter(Age == 24)
 
 ```
